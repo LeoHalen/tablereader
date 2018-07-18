@@ -18,7 +18,7 @@ import org.apache.poi.hwpf.usermodel.TableRow;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 
 /**
- * @Description: java类作用描述
+ * @Description: poi实现word表格数据读取
  * @Author: HALEN(李智刚)
  * @CreateDate: 2018/7/1810:31
  * <p>Copyright: Copyright (c) 2018</p>
