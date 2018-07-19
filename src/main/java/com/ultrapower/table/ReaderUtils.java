@@ -26,7 +26,7 @@ import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 public class ReaderUtils {
 
     public static void main(String[] args) {
-        test();
+        test1();
     }
 
     public static void testWord() {
@@ -175,6 +175,16 @@ public class ReaderUtils {
             HWPFDocument hwpf = new HWPFDocument(pfs);
             Range range = hwpf.getRange();//得到文档的读取范围
             TableIterator it = new TableIterator(range);
+
+            //获取当前时间（年月日）
+            Date date = new Date();
+            DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+            int currentTime = Integer.parseInt(dateFormat.format(date));
+
+            String puuid = UUID.randomUUID().toString().replaceAll("-", "");
+            String psql = "INSERT INTO bs_t_sm_dictionaryconfig VALUES('"+ puuid + "',''"+ ",''" +",NULL,1,NULL," + currentTime + ",NULL," + currentTime + ",NULL,NULL);";
+            System.out.println(psql + "-- 一级");
+
             //迭代文档中的表格
             while (it.hasNext()) {
                 Table tb = (Table) it.next();
@@ -184,36 +194,50 @@ public class ReaderUtils {
                     if (i == 0) {
                         continue;
                     }
-                    String front = "INSERT INTO bs_t_sm_dictionaryconfig VALUES("+ UUID.randomUUID().toString().replaceAll("-","") +",";
+                   /* String front = "INSERT INTO bs_t_sm_dictionaryconfig VALUES("+ UUID.randomUUID().toString().replaceAll("-","") +",";
                     String middle = ",NULL,1,'halen',"+new Date().getTime() +",'halen',"+new Date().getTime();
-                    String back = ",parent-uuid);";
-                    /*String front = "INSERT INTO bs_t_sm_dictionaryconfig VALUES(uuid,'报警方式',";
-                    String middle = "编码,NULL,1,'halen',时间,'halen',时间,";
-                    String back = "说明,parent-uuid);";*/
+                    String back = ",parent-uuid);";*/
+                    String front = "INSERT INTO bs_t_sm_dictionaryconfig VALUES(";
+                    String middle = "NULL,1,NULL,"+currentTime +",NULL,"+currentTime;
+
+                    //拼接uuid（pid）
+                    String uuid = UUID.randomUUID().toString().replaceAll("-", "");
+                    front += "'" + uuid + "'";
+
                     //迭代列，默认从0开始
                     for (int j = 0; j < tr.numCells(); j++) {
                         TableCell td = tr.getCell(j);//取得单元格
                         //取得单元格的内容
                         for(int k=0;k<td.numParagraphs();k++){
                             Paragraph para =td.getParagraph(k);
-                            switch (k) {
-                                case 0:
-                                    middle = ",'" + para.text() + "'" + middle;
+
+                            //获取单元格数据并做截取
+                            String text = para.text();
+                            text = text.substring(0,text.length()-1);
+
+                            switch (j) {
+                                case 0://获取编码
+                                    middle = ",'" + text + "'," + middle + "";
                                     break;
-                                case 1:
-                                    front += "'" + para.text() + "'";
+                                case 1://获取类别名称
+                                    front += ",'" + text + "'";
                                     break;
-                                case 2:
-                                    back = ",'" + para.text() + "'" + back;
+                                case 2://获取说明（数据库中叫备注）
+                                    if (text.isEmpty())
+                                        middle += ",NULL";
+                                    else {
+                                        middle += ",'" + text + "'";
+                                    }
                                     break;
                                 default:
                                     break;
                             }
-//                            s += para.text();
                         }
 
                     }
-                    System.out.println(front + middle + back);
+                    //拼接uuid（parentid）
+                    middle += ",'" + puuid + "');";
+                    System.out.println(front + middle);
                 }   //end for
             } //end while
         }catch(Exception e){
