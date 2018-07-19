@@ -238,10 +238,10 @@ public class ReaderUtils {
                     //拼接uuid（parentid）
                     middle += ",'" + puuid + "');";
                     System.out.println(front + middle);
-                }   //end for
-            } //end while
+                }
+            }
         }catch(Exception e){
             e.printStackTrace();
         }
-    }//end method
+    }
 }
